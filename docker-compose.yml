@@ -3,8 +3,8 @@ services:
     image: getmeili/meilisearch:v1.53.1
     environment:
       MEILI_ENV: development
-    #secrets:
-    #  - meili_master_key
+    secrets:
+      - meili_master_key
     entrypoint:
       - sh
       - -c
@@ -37,7 +37,6 @@ services:
     depends_on:
       - meilisearch
     deploy:
-      replicas: 3
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.teacher_coop.rule=Host(`www.teachercoop.org`)"
