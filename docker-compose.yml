@@ -40,8 +40,8 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.teacher_coop.rule=Host(`www.teachercoop.org`)"
-        - "traefik.http.routers.teacher_coop.entrypoints=web,websecure"
-        - "traefik.http.services.teacher_coop.loadbalancer.server.port=80"
+        - "traefik.http.routers.teacher_coop.entrypoints=web"
+        - "traefik.http.services.teacher_coop.loadbalancer.server.port=4000"
 
   traefik:
     image: traefik:v3.7
@@ -59,7 +59,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       labels:
-        - "traefik.http.routers.dashboard.rule=Host(`traefik.teachercoo.org`)"
+        - "traefik.http.routers.dashboard.rule=Host(`traefik.teachercoop.org`)"
         - "traefik.http.routers.dashboard.service=api@internal"
         - "traefik.http.routers.dashboard.entrypoints=websecure"
       placement:
