@@ -1,0 +1,67 @@
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.53.1
+    environment:
+      MEILI_ENV: development
+    secrets:
+      - meili_master_key
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        export MEILI_MASTER_KEY="$$(cat /run/secrets/meili_master_key)";
+        exec /bin/meilisearch
+    volumes:
+      - meilisearch_data:/meili_data
+
+  teacher_coop:
+    image: eguefif/teacher_coop:20260922100008
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      PHX_HOST: "www.teachercoop.org"
+    secrets:
+      - database_url
+      - secret_key_base
+      - meili_master_key
+    command:
+      - sh
+      - -c
+      - >-
+        export DATABASE_URL="$$(cat /run/secrets/database_url)";
+        export SECRET_KEY_BASE="$$(cat /run/secrets/secret_key_base)";
+        export MEILISEARCH_MASTERKEY="$$(cat /run/secrets/meili_master_key)";
+        /app/bin/migrate && exec /app/bin/server
+    networks:
+      - default
+      - traefik_public
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 60s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.teacher_coop.rule=Host(`www.teachercoop.org`) || Host(`teachercoop.org`)"
+        - "traefik.http.routers.teacher_coop.entrypoints=websecure"
+        - "traefik.http.routers.teacher_coop.middlewares=to_www"
+        - "traefik.http.middlewares.to_www.redirectregex.regex=^https://teachercoop\\.org/(.*)"
+        - "traefik.http.middlewares.to_www.redirectregex.replacement=https://www.teachercoop.org/$${1}"
+        - "traefik.http.services.teacher_coop.loadbalancer.server.port=4000"
+
+volumes:
+  meilisearch_data:
+
+networks:
+  traefik_public:
+    external: true
+
+secrets:
+  database_url:
+    external: true
+  secret_key_base:
+    external: true
+  meili_master_key:
+    external: true

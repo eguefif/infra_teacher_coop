@@ -19,6 +19,7 @@ entryPoints:
 providers:
   swarm:
     exposedByDefault: false
+    network: traefik_public
 certificatesResolvers:
   cert:
     acme:
