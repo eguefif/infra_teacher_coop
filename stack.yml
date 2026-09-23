@@ -15,7 +15,6 @@ services:
       - meilisearch_data:/meili_data
 
   teacher_coop:
-
     image: eguefif/teacher_coop:20260922100008
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -33,10 +32,6 @@ services:
         export SECRET_KEY_BASE="$$(cat /run/secrets/secret_key_base)";
         export MEILISEARCH_MASTERKEY="$$(cat /run/secrets/meili_master_key)";
         exec /app/bin/server
-    volumes:
-      - ./:/app/data
-    depends_on:
-      - meilisearch
     deploy:
       labels:
         - "traefik.enable=true"
@@ -46,6 +41,26 @@ services:
         - "traefik.http.middlewares.to_www.redirectregex.regex=^https://teachercoop\\.org/(.*)"
         - "traefik.http.middlewares.to_www.redirectregex.replacement=https://www.teachercoop.org/$${1}"
         - "traefik.http.services.teacher_coop.loadbalancer.server.port=4000"
+
+  migration:
+    image: eguefif/teacher_coop:20260922100008
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    secrets:
+      - database_url
+      - secret_key_base
+      - meili_master_key
+    command:
+      - sh
+      - -c
+      - >-
+        export DATABASE_URL="$$(cat /run/secrets/database_url)";
+        export SECRET_KEY_BASE="$$(cat /run/secrets/secret_key_base)";
+        export MEILISEARCH_MASTERKEY="$$(cat /run/secrets/meili_master_key)";
+        exec /app/bin/migrate
+    deploy:
+      labels:
+        - "traefik.enable=false"
 
   traefik:
     image: traefik:v3.7
@@ -71,8 +86,8 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.services.traefik.loadbalancer.server.port=9000"
-        - "traefik.http.routers.dashboard.rule=Host(`www.teachercoop.org`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+        - "traefik.http.services.traefik.loadbalancer.server.port=9500"
+        - "traefik.http.routers.dashboard.rule=Host(`traefik.teachercoop.org`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
         - "traefik.http.routers.dashboard.entrypoints=websecure"
         - "traefik.http.routers.dashboard.service=api@internal"
         - "traefik.http.routers.dashboard.middlewares=auth"
@@ -81,8 +96,48 @@ services:
         constraints:
           - node.role == manager
 
+  agent:
+    image: portainer/agent:lts
+    environment:
+      AGENT_CLUSTER_ADDR: tasks.agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    networks:
+      - agent_network
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+
+  portainer:
+    image: portainer/portainer-ce:lts
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    volumes:
+      - portainer_data:/data
+    networks:
+      - default
+      - agent_network
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      labels:
+      - "traefik.enable=true"
+      - "traefik.swarm.network=teachercoop_default"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.teachercoop.org`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer.service=portainer"
+
 volumes:
   meilisearch_data:
+  portainer_data:
+
+networks:
+  agent_network:
+    external: true
 
 secrets:
   database_url:

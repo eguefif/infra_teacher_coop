@@ -23,7 +23,11 @@ The GHA connects to the server using https. Let's encrypt is configure to handle
 - [x] Make traefik redirect to the app
 - [x] Create a domain name
 - [x] Configure let's encrypt
-- [ ] Need an email adapter to make it works: see mailgun.
+- [ ] Try to use Portainer and webhook to trigger migrate service and then, update the app service with the new image.
 - [ ] Create a GH that trigger something on the server and pull new repo
     - [ ] It first should run a migration service wait for it
     - [ ] Then update current teacher_coop containers
+- [ ] Need an email adapter to make it works: see mailgun.
+- [ ] I need to seperate portainer from the other stack. It has to run independatly
+    - [ ] Have traefik and portainer on one stack
+    - [ ] Have the rest on another stack
