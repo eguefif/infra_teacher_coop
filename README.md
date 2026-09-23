@@ -22,7 +22,7 @@ The GHA connects to the server using https. Let's encrypt is configure to handle
 - [x] Define secret
 - [x] Make traefik redirect to the app
 - [x] Create a domain name
-- [ ] Configure let's encrypt
+- [x] Configure let's encrypt
 - [ ] Need an email adapter to make it works: see mailgun.
 - [ ] Create a GH that trigger something on the server and pull new repo
     - [ ] It first should run a migration service wait for it
