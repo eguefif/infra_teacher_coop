@@ -15,7 +15,8 @@ services:
       - meilisearch_data:/meili_data
 
   teacher_coop:
-    image: eguefif/teacher_coop:20260919130041
+
+    image: eguefif/teacher_coop:20260922100008
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
@@ -39,29 +40,43 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.teacher_coop.rule=Host(`www.teachercoop.org`)"
-        - "traefik.http.routers.teacher_coop.entrypoints=web"
+        - "traefik.http.routers.teacher_coop.rule=Host(`www.teachercoop.org`) || Host(`teachercoop.org`)"
+        - "traefik.http.routers.teacher_coop.entrypoints=websecure"
+        - "traefik.http.routers.teacher_coop.middlewares=to_www"
+        - "traefik.http.middlewares.to_www.redirectregex.regex=^https://teachercoop\\.org/(.*)"
+        - "traefik.http.middlewares.to_www.redirectregex.replacement=https://www.teachercoop.org/$${1}"
         - "traefik.http.services.teacher_coop.loadbalancer.server.port=4000"
 
   traefik:
     image: traefik:v3.7
-    command:
-      - "--api.insecure=false"
-      - "--api.dashboard=true"
-      - "--providers.swarm=true"
-      - "--providers.swarm.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
+    secrets:
+      - admin_email
+      - traefik_admin_password
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        ADMIN_EMAIL="$$(cat /run/secrets/admin_email)";
+        PASSWORD="$$(cat /run/secrets/traefik_admin_password)";
+        sed "s|__ADMIN_EMAIL__|$$ADMIN_EMAIL|" /etc/traefik/traefik.tmpl.yml > /etc/traefik/traefik.yml;
+        printf '%s:%s\n' "$$ADMIN_EMAIL" "$$PASSWORD" > /etc/traefik/dashboard_users;
+        exec traefik
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/traefik/acme.json:/acme.json
+      - ./traefik.yml:/etc/traefik/traefik.tmpl.yml:ro
     deploy:
       labels:
-        - "traefik.http.routers.dashboard.rule=Host(`traefik.teachercoop.org`)"
-        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.enable=true"
+        - "traefik.http.services.traefik.loadbalancer.server.port=9000"
+        - "traefik.http.routers.dashboard.rule=Host(`www.teachercoop.org`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
         - "traefik.http.routers.dashboard.entrypoints=websecure"
+        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.http.routers.dashboard.middlewares=auth"
+        - "traefik.http.middlewares.auth.basicauth.usersfile=/etc/traefik/dashboard_users"
       placement:
         constraints:
           - node.role == manager
@@ -75,4 +90,8 @@ secrets:
   secret_key_base:
     external: true
   meili_master_key:
+    external: true
+  admin_email:
+    external: true
+  traefik_admin_password:
     external: true

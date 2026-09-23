@@ -1,0 +1,28 @@
+api:
+  insecure: false
+  dashboard: true
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: "websecure"
+          scheme: "https"
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certresolver: "cert"
+providers:
+  swarm:
+    exposedByDefault: false
+certificatesResolvers:
+  cert:
+    acme:
+      email: "__ADMIN_EMAIL__"
+      storage: "/acme.json"
+      httpChallenge:
+        entryPoint: "web"
