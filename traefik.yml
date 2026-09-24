@@ -27,3 +27,18 @@ certificatesResolvers:
       storage: "/acme.json"
       httpChallenge:
         entryPoint: "web"
+log:
+  filePath: "/var/log/traefik.log"
+  format: json
+  level: INFO
+accessLog:
+  format: json
+  fields:
+    defaultMode: keep
+    headers:
+      defaultMode: drop
+      names:
+        User-Agent: keep
+        Referer: keep
+    queryParameters:
+      defaultMode: drop
