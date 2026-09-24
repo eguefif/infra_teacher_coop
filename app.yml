@@ -24,6 +24,7 @@ services:
       - database_url
       - secret_key_base
       - meili_master_key
+      - mailgun_sending_key
     command:
       - sh
       - -c
@@ -31,6 +32,7 @@ services:
         export DATABASE_URL="$$(cat /run/secrets/database_url)";
         export SECRET_KEY_BASE="$$(cat /run/secrets/secret_key_base)";
         export MEILISEARCH_MASTERKEY="$$(cat /run/secrets/meili_master_key)";
+        export MAILGUN_API_KEY="$$(cat /run/secrets/mailgun_sending_key)";
         /app/bin/migrate && exec /app/bin/server
     networks:
       - default
@@ -70,4 +72,6 @@ secrets:
   secret_key_base:
     external: true
   meili_master_key:
+    external: true
+  mailgun_sending_key:
     external: true

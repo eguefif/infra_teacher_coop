@@ -7,6 +7,7 @@ This repo contains the code that manages the infrastructure of the website: www.
 - [ ] Handle document storage across multiple nodes.
 - [ ] Handle Meilisearch storage.
 - [ ] Check if the migration system works and if we need to modify the stack configuration.
+- [ ] Add monitoring Traefik: I want to know how many connections, what kind of connections and check if I need to avoid bot etc...
 
 ## Architecture
 
