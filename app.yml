@@ -20,6 +20,8 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       PHX_HOST: "www.teachercoop.org"
+      MAILGUN_DOMAIN: "teachercoop.org"
+      MAILGUN_BASE_URL: "https://api.eu.mailgun.net"
     secrets:
       - database_url
       - secret_key_base

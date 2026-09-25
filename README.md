@@ -4,6 +4,7 @@ This repo contains the code that manages the infrastructure of the website: www.
 
 ## TODO
 - [ ] Need an email adapter to make it work: see Mailgun.
+- [ ] Infra stack should be run in its own user.
 - [ ] Handle document storage across multiple nodes.
 - [ ] Handle Meilisearch storage.
 - [ ] Check if the migration system works and if we need to modify the stack configuration.
