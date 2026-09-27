@@ -21,7 +21,7 @@ services:
     environment:
       PHX_HOST: "www.teachercoop.org"
       MAILGUN_DOMAIN: "teachercoop.org"
-      MAILGUN_BASE_URL: "https://api.eu.mailgun.net"
+      MAILGUN_BASE_URL: "https://api.eu.mailgun.net/v3"
     secrets:
       - database_url
       - secret_key_base
