@@ -27,15 +27,12 @@ services:
       - secret_key_base
       - meili_master_key
       - mailgun_sending_key
+      - access_key_id
+      - secret_access_key
     command:
       - sh
       - -c
-      - >-
-        export DATABASE_URL="$$(cat /run/secrets/database_url)";
-        export SECRET_KEY_BASE="$$(cat /run/secrets/secret_key_base)";
-        export MEILISEARCH_MASTERKEY="$$(cat /run/secrets/meili_master_key)";
-        export MAILGUN_API_KEY="$$(cat /run/secrets/mailgun_sending_key)";
-        /app/bin/migrate && exec /app/bin/server
+      - /app/bin/migrate && exec /app/bin/server
     networks:
       - default
       - traefik_public
@@ -76,4 +73,8 @@ secrets:
   meili_master_key:
     external: true
   mailgun_sending_key:
+    external: true
+  access_key_id:
+    external: true
+  secret_access_key:
     external: true
