@@ -3,11 +3,9 @@
 This repo contains the code that manages the infrastructure of the website: www.teachercoop.org.
 
 ## TODO
-- [ ] Need an email adapter to make it work: see Mailgun.
+- [x] Need an email adapter to make it work: see Mailgun.
 - [ ] Infra stack should be run in its own user.
-- [ ] Handle document storage across multiple nodes.
 - [ ] Handle Meilisearch storage.
-- [ ] Check if the migration system works and if we need to modify the stack configuration.
 - [ ] Add monitoring Traefik: I want to know how many connections, what kind of connections and check if I need to avoid bot etc...
 
 ## Architecture
@@ -55,6 +53,7 @@ Even though the infra uses docker compose files and Portainer to automate a lot 
 - [ ] Define Docker secrets: see private documentation.
 - [ ] Create overlay networks.
 - [ ] Pull the GitHub repo and manually start the stack based on `infra.yml`.
+- [ ] Set up a cron job to remove images and free space using the `prune_drocker.sh` script
 
 The infrastructure is split into two stacks that share the `traefik_public` overlay network:
 - `infra.yml`: traefik, portainer and the portainer agent. Deployed from the CLI.
