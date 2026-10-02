@@ -5,8 +5,6 @@ services:
       MEILI_ENV: production
     secrets:
       - meili_master_key
-    ports:
-      - "7700:7700"
     entrypoint:
       - sh
       - -c
